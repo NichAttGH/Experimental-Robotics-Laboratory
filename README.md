@@ -1,164 +1,226 @@
-# Experimental Robotics Laboratory - Assignment 2
+# Experimental_Robotics-Assignment_1
 
-## Introduction
+## IMPORTANT 
 
-In this repository, the [ROS](https://www.ros.org) package `assignment_2` has been implemented to satisfy the requirements of the second assignment of the course [Experimental Robotics Laboratory](https://corsi.unige.it/en/off.f/2023/ins/66551?codcla=10635) of [Robotics Engineering](https://corsi.unige.it/en/corsi/10635) course by [University degli Studi di Genova](https://unige.it).  
-The assignment depends on the [aruco](https://github.com/pal-robotics/aruco_ros/tree/noetic-devel/aruco) package for acquiring and parsing the image from the camera, [gmapping](http://wiki.ros.org/gmapping) package, for building the global and local map of the navigated environment, [move_base](http://wiki.ros.org/move_base) package to drive the rosbot toward the target with obstacle avoidance and the [ROSPlan](https://kcl-planning.github.io/ROSPlan/) framework for problem generation, planning and execution of the plan.  
-The robot is a [Husarion ROSbot 2R](https://husarion.com/#robots) and its model is provided by the package [rosbot_description](https://github.com/husarion/rosbot_ros/tree/noetic/src/rosbot_description). The `ROSPlan` framework and the packages `aruco` and `rosbot_description` are included in this repository for convenience.  
-The requirements for the assignment are the following:
+In the simulation, the camera frame the side of the marker reached a maximum of 175 pixels because, by increasing the threshold, the camera was unable to detect the marker.
+In the real robot, on the other hand, we set the threshold to 185, so that the robot is a little closer to the marker and the simulation and real robot are almost equal.
 
-- A mobile robot endowed with a camera must find all marker in a given environment and go back to the initial position.
-- The positions of the marker are the following:
-  - marker 11 is visible from the position x = 6.0, y = 2.0
-  - marker 12 is visible from the position x = 7.0, y = -5.0
-  - marker 13 is visible from the position x = -3.0, y = -8.0
-  - marker 15 is visible from the position x = -7.0, y =-1.5
-- The framework `ROSPlan` must be used to plan the actions of the robot
-- The assignment must be implemented both in simulation (the world file assignment2.world is given) and with the real robot.
+## Project Goal
 
-The requirements have been fulfilled as follows:
+Given four markers, the aim is to get the robot in front of them in such a way that the side of each marker is at least 175 pixels in the camera frame. Finally, after testing the code in simulation, our goal was to run it on the real robot.
 
-- this branch ([main](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2))  
-  implements the code for the simulation of the real rosbot. The architecture is based on a node implementing the logic for generating the plan using the `ROSPlan` framework, a node implementing the vision data handling using the `aruco` package, and three nodes which implement the actions used to execute the plan.
-- branch [rosbot](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/tree/rosbot)  
-  adapts the code in branch [main](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2) into the code used to drive the real rosbot to perform the given tasks.
+## How to install and run
 
-## Installation
+### Install
 
-Requirements:
+It is necessary to have ROS. Follow the instructions from [wiki.ros.org](http://wiki.ros.org/).
 
-- ROS Noetic environment is already installed and working properly,
-- packages [move_base](http://wiki.ros.org/move_base) and [gmapping](http://wiki.ros.org/gmapping) properly installed. These packages are used to drive the rosbot and to create the global and local map of the environment.
-- Git version control system properly installed,
-- a proper Github SSH key setup (see [Adding a new SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) for more information about it)
+If you are using the professor's Docker Image, add the line ```source /opt/ros/noetic/setup.bash``` to the .bashrc file.
 
-The software has been tested in a machine with Linux Ubuntu 20.04 LTS.  
-The package `assignment_2` makes use of the terminal [xterm](https://invisible-island.net/xterm/) to provide information via a separated console.  
-In Ubuntu, it is possible to install it using the apt command:  
+You need to use Git. Run: ```sudo apt-get install git```
 
-```shell
-sudo apt update && sudo apt -y install xterm
+Then run on your shell: ```git clone https://github.com/luk1897/Experimental_Robotics-Assignment_1```
+
+Finally, you need to have aruco in your pc. Run ```git clone https://github.com/CarmineD8/aruco_ros ```
+
+### Run
+
+Run this command on your shell: ```roslaunch assignment_1 assignment1.launch```
+
+## Environment
+
+![immagine](https://github.com/luk1897/Experimental_Robotics-Assignment_1/assets/80416766/a2aa6bef-f815-477f-9023-456ed6b273f9)
+
+This is the entire environment in which we worked.
+
+## Nodes
+
+### ROBOT VISION NODE
+
+This ROS node is used for getting the informations (height and width) regarding the camera (through /camera/color/camera_info topic) and the informations (id, center and corners) regarding the markers (through /camera/color/image_raw topic). In the main we set the subscribers.
+
+#### camera_cb
+
+```python
+def camera_cb(camera_msg):
+
+    global cam_center_x, cam_center_y
+
+    cam_center_x = camera_msg.width / 2  # computing the x coordinate of the center
+    cam_center_y = camera_msg.height / 2   # computing the y coordinate of the center
+  ```
+  
+  Function for computing the camera center.
+  
+  #### Img_cb
+  
+  ```python
+ 
+def img_cb(img_msg):
+
+    global cam_center_x, cam_center_y, pub
+
+    bridge = CvBridge()  
+    image = bridge.imgmsg_to_cv2(img_msg, desired_encoding='bgr8') #bridge for transforming the image
+
+    aruco_dict = aruco.Dictionary_get(aruco.DICT_ARUCO_ORIGINAL) # right dictionary
+    parameters = aruco.DetectorParameters_create()           # parameters useful for aruco
+    
+    corners, ids, _ = aruco.detectMarkers(image, aruco_dict, parameters=parameters) # getting corners and id
+    
+
+    if ids is not None:
+    
+    
+        marker_center_x = (corners[0][0][0][0]+ corners[0][0][1][0]+ corners[0][0][2][0]+ corners[0][0][3][0]) / 4  # compute x coordinate center of a marker doing the average between all the corners
+        marker_center_y = (corners[0][0][0][1]+ corners[0][0][1][1]+ corners[0][0][2][1]+ corners[0][0][3][1]) / 4   # compute y coordinate center of a marker doing the average between all the corners
+        
+        camera_center = [cam_center_x, cam_center_y]     
+        marker_center = [marker_center_x, marker_center_y]
+        
+        #all the four corners
+        
+        top_right = [corners[0][0][0][0], corners[0][0][0][1]] 
+        top_left = [corners[0][0][1][0], corners[0][0][1][1]]
+        bottom_left = [corners[0][0][2][0], corners[0][0][2][1]]
+        bottom_right = [corners[0][0][3][0], corners[0][0][3][1]]
+        
+        
+        info_msg = RobotVision()
+        
+        # sending all the informations to info_vision
+        
+        info_msg.id = int(ids[0][0])
+        info_msg.camera_center = camera_center
+        info_msg.marker_center = marker_center
+        info_msg.marker_top_right = top_right
+        info_msg.marker_top_left = top_left
+        info_msg.marker_bottom_left = bottom_left
+        info_msg.marker_bottom_right = bottom_right
+        
+        print(ids[0][0])
+	
+        pub.publish(info_msg)
+        
+        
+    else:
+    	print("None")
 ```
 
-To use the packages in this repository, create a directory where a catkin workspace will be created for running the packages:
+Function for making the image usable with aruco, computing and sending all the informations regarding the markers (id, center and corners).
 
-```bash
-mkdir test_ws
+
+### CONTROLLER NODE
+
+This node allows the robot to turn in search of the desired marker and then to reach it. The logic is implemented in the main.
+
+#### vision_cb
+
+``` python
+def vision_cb(vision_msg):
+
+    global vision_id, camera_center, marker_center, marker_top_right, marker_top_left, marker_bottom_left, marker_bottom_right, id_marker
+    
+    if(vision_msg.id == id_marker):
+    
+	    vision_id = vision_msg.id
+	    camera_center = vision_msg.camera_center
+	    marker_center = vision_msg.marker_center
+	    marker_top_right = vision_msg.marker_top_right
+	    marker_top_left = vision_msg.marker_top_left
+	    marker_bottom_left = vision_msg.marker_bottom_left
+	    marker_bottom_right = vision_msg.marker_bottom_right
+``` 
+Function for getting information (id, camera center, marker center and corners) regarding markers from vision node.
+
+#### get_close_marker
+
+``` python
+def get_close_marker():
+
+    global vision_id, camera_center, marker_center, marker_top_left, marker_bottom_left, pub, state, id_marker
+    
+    target = 175    # marker side to reach
+    
+    velocity = Twist()
+    
+    x_cord = marker_top_left[0] - marker_bottom_left[0]  # x coordinate of left corner of a marker
+    y_cord = marker_top_left[1] - marker_bottom_left[1]  # y coordinate of left corner of a marker
+    
+    side = np.sqrt(np.power(x_cord,2) + np.power(y_cord,2))  # computing the side
+    
+    linear_gain = 0.002
+    angular_gain = 0.002
+          
+    angular_error = camera_center[0] - marker_center[0]  # angular error between camera center and marker center
+    linear_error = target - side                 # linear error between the robot and a marker        
+          
+    velocity.linear.x = linear_gain * linear_error    # computing the right linear velocity
+    velocity.angular.z = angular_gain * angular_error # computing the right angular velocity
+          
+    pub.publish(velocity)  # publish the velocity to /cmd_vel topic
+    
+    print("Reaching the target!")
+    
+    if(side >= target):   # marker side in the camera reached the target
+           print("Reached!")
+           if(id_marker != 15):  # if the id is not the last (15)
+              id_marker = id_list.pop()  # extract the id from the list
+              state = "search_marker"  # change the state
+           else:
+              rospy.signal_shutdown("exit")  # a way to close the node
 ```
+Function for getting close to the marker and extracting the next goal id
 
-Clone the repository in the test_ws/src folder:
+#### search_marker
 
-```bash
-git clone git@github.com:davideCaligola/experimentalRoboticsLab_assignment2.git test_ws/src
+``` python
+def search_marker():
+
+    global state, pub, vision_id, id_marker
+          
+    velocity = Twist()
+    
+    if(id_marker != vision_id):    # the id marker is not the desired one
+         
+         print("Looking for the target!")
+         
+         velocity.angular.z = -0.4   # getting on rotating
+    
+         pub.publish(velocity)
+         
+    else:                   # the id marker is the desired one
+         
+         velocity.angular.z = 0     # stopping all velocities
+         velocity.linear.x = 0  
+         pub.publish(velocity)
+         
+         state = "get_close_marker"   # changing state
 ```
+Function for allowing the robot to rotate until it finds the desired id marker.
 
-Navigate into the workspace folder and build the packages
+## Flowchart
 
-```bash
-cd test_ws
-catkin_make
-```
+## Outline of the assignment and the whole environment
 
-Setup the current workspace
+![immagine](https://github.com/luk1897/Experimental_Robotics-Assignment_1/assets/80416766/a7a052b5-3889-42d9-8acd-7c1102a4a1d7)
 
-```bash
-source ./devel/setup.bash
-```
+## Differences between simulation and real robot
+* The linear gain was reduced from 0.0025 to 0.002 in the real robot.
+* The angular velocity was reduced from -0.5 to -0.4 in the real robot.
+* Of course, there is no need for gazebo and urdf parts in the real robot.
 
-Copy the marker models in the local directory `.gazebo`, otherwise the marker will not be visible in the Gazebo environment.
+## Results
 
-```bash
-mkdir -p ~/.gazebo
-cp -r ./src/assignment_2/aruco_models/* ~/.gazebo
-```
+https://github.com/luk1897/Experimental_Robotics-Assignment_1/assets/80416766/d64546dd-3616-4faf-9d98-949b5a38abfb
 
-## Use
 
-The simulation can be started with the provided launch file:
-
-```bash
-roslaunch assignment_2 nav.launch
-```
-
-The Gazebo and RViz environments open showing the rosbot within the provided world with the markers.  
-The rosbot will drive toward the first marker position. Once reached, it will turn looking for the marker. Once the marker is found, the rosbot will move toward the next marker.  
-Once all markers have been found, the rosbot will drive toward the initial position, and once reached, the process terminates and closes all the started processes.  
-An example of simulation run is shown in the following video.
-
-https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/assets/114524396/79079982-d13f-408c-ba0d-72de86266727
-
-## Architecture
-
-The package is developed in five nodes:  
-
-- [robot_logic.py](#robot_logicpy-source)
-- [robot_vision.py](#robot_visionpy-source)
-- [go-home_interface.cpp](#go-home_interfacecpp-source)
-- [goto_interface.cpp](#goto_interfacecpp-source)
-- [search_interface.cpp](#search_interfacecpp-source)
-
-The developed nodes, the Gazebo and RViz environment are organized as shown in the following `rqt_graph`:
-
-<img src="./assets/rqt_graph_main.png" alt="rqt_graph main">
-
-The following sections decribes in more details each developed node.
-
-### robot_logic.py ([source](./assignment_2/script/robot_logic.py))
-It interfaces with the `ROSPlan` framework to drive the rosbot to accomplish the task:
-
-- generates the problem,
-- generates the plan,
-- parse the plan to make it `ROS` compatible,
-- dispatches the actions to accomplish the task
-
-It implements a simple state machine to send the requests  to the `ROSPlan` services, as represented in the following state machine:
-<img src="./assets/robot_logic_stateMachine.png" alt="robot_logic.py state machine">  
-*`robot_logic.py` node state machine*
-
-### robot_vision.py ([source](./assignment_2/script/robot_vision.py))
-It subscribes to the following camera topics:
-
-- `/camera/color/camera_info`  
-    to calculate the position of the camera center  
-- `/camera/color/image_raw`  
-    to extract information about the marker in view  
-
-It publishes the topic `/info_vision`, which provides data about the current seen marker id and the four corners of the marker.
-
-```C++
-int32[] ids
-float32[] camera_center
-float32[] marker_center
-float32[] marker_top_right
-float32[] marker_top_left
-float32[] marker_bottom_left
-float32[] marker_bottom_right
-```
-
-*`/info_vision` topic*
-
-### goto_interface.cpp ([source](./assignment_2/src/goto_interface.cpp))
-It implements the `goto` action defined in the `domain`([source](./assignment_2/pddl/domain.pddl)).  
-It receives the destination waypoint to reach from the dispatcher and sends the goal to the `move_base` package which drives the rosbot toward the target waypoint.
-
-### go-home_interface.cpp ([source](./assignment_2/src/go-home_interface.cpp))
-It implements the `go-home` action defined in the `domain`([source](./assignment_2/pddl/domain.pddl)).  
-It receives the destination waypoint to reach from the dispatcher and sends the goal to the `move_base` package which drives the rosbot toward the target waypoint.
-
-### search_interface.cpp ([source](./assignment_2/src/search_interface.cpp))
-it implements the `search` action defined in the `domain`([source](./assignment_2/pddl/domain.pddl)).  
-
-- It subscribes to the topic `/info_vision` to receive information about the current marker id seen by the camera.
-- It receives from the dispatcher the marker id to look for.
-- It sends to the rosbot the command to turn around itself until it finds the searched marker id.
-
-## Improvements
-
-The package can be improved considering the following points:
-
-- there is not any error handling,
-- the vision system handles only one marker per time. If more than a marker is in the camera view, only the first one in the list provided by the camera is considered,
-- if the camera does not find the searched marker id, the rosbot keeps on turning on itself looking for the marker id indefinitely. It could be implemented a timeout or any other exception handler,
-- once the rosbot reaches the target point, it takes time to get the notification from the `move_base` package that the service goal has been achieved. It could be possible to speed up the process introducing a check on the position of the robot and once reached the target position within a threshold, cancel the `move_base` service goal,
-- currently, the waypoint coordinates are hardcoded in `goto_interface.cpp` and `go-home_interface`. It would be more comfortable to be able to set the list of waypoint coordinates once and from launch file, avoiding the need to compile the code every time one or more coordinates are modified,
-- currently, once the rosbot comes back to the starting point, the `robot_logic.py` node terminates. Since the node is required, its termination triggers all other processes to terminate as well. A more graceful shut down procedure could be devised.
+##  Possibile improvements
+	
+	
+	
+	
+	
+	
+	
+	

@@ -1,4 +1,4 @@
-# Experimental_Robotics-Assignment_1
+# Experimental Robotics Laboratory - Assignment 1
 
 ## IMPORTANT 
 

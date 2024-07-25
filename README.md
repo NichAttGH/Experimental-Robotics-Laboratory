@@ -2,9 +2,16 @@
 
 ## Introduction
 
-In this repository, the [ROS](https://www.ros.org) package `assignment_2` has been implemented to satisfy the requirements of the second assignment of the course [Experimental Robotics Laboratory](https://corsi.unige.it/en/off.f/2023/ins/66551?codcla=10635) of [Robotics Engineering](https://corsi.unige.it/en/corsi/10635) course by [University degli Studi di Genova](https://unige.it).  
-The assignment depends on the [aruco](https://github.com/pal-robotics/aruco_ros/tree/noetic-devel/aruco) package for acquiring and parsing the image from the camera, [gmapping](http://wiki.ros.org/gmapping) package, for building the global and local map of the navigated environment, [move_base](http://wiki.ros.org/move_base) package to drive the rosbot toward the target with obstacle avoidance and the [ROSPlan](https://kcl-planning.github.io/ROSPlan/) framework for problem generation, planning and execution of the plan.  
-The robot is a [Husarion ROSbot 2R](https://husarion.com/#robots) and its model is provided by the package [rosbot_description](https://github.com/husarion/rosbot_ros/tree/noetic/src/rosbot_description). The `ROSPlan` framework and the packages `aruco` and `rosbot_description` are included in this repository for convenience.  
+In this Assignment have been implemented:
+- the [ROS](https://www.ros.org) package to satisfy the requirements;
+-  The [aruco](https://github.com/pal-robotics/aruco_ros/tree/noetic-devel/aruco) package for acquiring and parsing the image from the camera;
+-  The [gmapping](http://wiki.ros.org/gmapping) package, for building the global and local map of the navigated environment;
+-  The [move_base](http://wiki.ros.org/move_base) package to drive the rosbot toward the target with obstacle avoidance;
+-  The [ROSPlan](https://kcl-planning.github.io/ROSPlan/) framework for problem generation, planning and execution of the plan.
+
+The robot is a [Husarion ROSbot 2R](https://husarion.com/#robots) and its model is provided by the package [rosbot_description](https://github.com/husarion/rosbot_ros/tree/noetic/src/rosbot_description).
+The `ROSPlan` framework and the packages `aruco` and `rosbot_description` are included in this repository for convenience.
+
 The requirements for the assignment are the following:
 
 - A mobile robot endowed with a camera must find all marker in a given environment and go back to the initial position.
@@ -16,46 +23,35 @@ The requirements for the assignment are the following:
 - The framework `ROSPlan` must be used to plan the actions of the robot
 - The assignment must be implemented both in simulation (the world file assignment2.world is given) and with the real robot.
 
-The requirements have been fulfilled as follows:
-
-- this branch ([main](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2))  
-  implements the code for the simulation of the real rosbot. The architecture is based on a node implementing the logic for generating the plan using the `ROSPlan` framework, a node implementing the vision data handling using the `aruco` package, and three nodes which implement the actions used to execute the plan.
-- branch [rosbot](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2/tree/rosbot)  
-  adapts the code in branch [main](https://github.com/davideCaligola/experimentalRoboticsLab_assignment2) into the code used to drive the real rosbot to perform the given tasks.
+In this branch we implement the code for the simulation of the real rosbot. The architecture is based on:
+- a node implementing the logic for generating the plan using the `ROSPlan` framework;
+- a node implementing the vision data handling using the `aruco` package;
+- three nodes which implement the actions used to execute the plan.
 
 ## Installation
 
 Requirements:
 
-- ROS Noetic environment is already installed and working properly,
-- packages [move_base](http://wiki.ros.org/move_base) and [gmapping](http://wiki.ros.org/gmapping) properly installed. These packages are used to drive the rosbot and to create the global and local map of the environment.
-- Git version control system properly installed,
-- a proper Github SSH key setup (see [Adding a new SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) for more information about it)
-
-The software has been tested in a machine with Linux Ubuntu 20.04 LTS.  
-The package `assignment_2` makes use of the terminal [xterm](https://invisible-island.net/xterm/) to provide information via a separated console.  
-In Ubuntu, it is possible to install it using the apt command:  
-
+- ROS Noetic environment is already installed and working properly;
+- Packages [move_base](http://wiki.ros.org/move_base) and [gmapping](http://wiki.ros.org/gmapping) properly installed. These packages are used to drive the rosbot and to create the global and local map of the environment;
+- Git properly installed;
+- [Xterm](https://invisible-island.net/xterm/) to provide information via a separated console.
+  To install it:
 ```shell
 sudo apt update && sudo apt -y install xterm
 ```
 
-To use the packages in this repository, create a directory where a catkin workspace will be created for running the packages:
+For testing we used a machine with Linux Ubuntu 20.04 LTS.  
 
+
+To use the packages in this repository, just clone the repository in your_catkin_workspace/src folder with this command:
 ```bash
-mkdir test_ws
+git clone --branch name_of_the_branch https://repository_url.git
 ```
 
-Clone the repository in the test_ws/src folder:
-
+Go back into the workspace folder and build the packages
 ```bash
-git clone git@github.com:davideCaligola/experimentalRoboticsLab_assignment2.git test_ws/src
-```
-
-Navigate into the workspace folder and build the packages
-
-```bash
-cd test_ws
+cd your_catkin_workspace
 catkin_make
 ```
 
@@ -65,31 +61,26 @@ Setup the current workspace
 source ./devel/setup.bash
 ```
 
-Copy the marker models in the local directory `.gazebo`, otherwise the marker will not be visible in the Gazebo environment.
-
-```bash
-mkdir -p ~/.gazebo
-cp -r ./src/assignment_2/aruco_models/* ~/.gazebo
-```
+Copy the marker models (the entire folder) in the local directory `.gazebo` (maybe the folder is hidden, pay attention!), otherwise the marker will not be visible in the Gazebo environment.
 
 ## Use
 
 The simulation can be started with the provided launch file:
 
 ```bash
-roslaunch assignment_2 nav.launch
+roslaunch assignment_2 assignment_2.launch
 ```
 
-The Gazebo and RViz environments open showing the rosbot within the provided world with the markers.  
+Once started, the Gazebo and RViz environments show the rosbot within the provided world with the markers.  
 The rosbot will drive toward the first marker position. Once reached, it will turn looking for the marker. Once the marker is found, the rosbot will move toward the next marker.  
-Once all markers have been found, the rosbot will drive toward the initial position, and once reached, the process terminates and closes all the started processes.  
+Once all markers have been found, the rosbot will drive toward the initial position, and once reached, we are notified with a last message as "goal achieved".
 An example of simulation run is shown in the following video.
 
 https://github.com/user-attachments/assets/45b4d82f-aaea-4ca0-83bf-f28f5f1e6706
 
 ## Architecture
 
-The package is developed in five nodes:  
+We developed five nodes:  
 
 - [robot_logic.py](#robot_logicpy-source)
 - [robot_vision.py](#robot_visionpy-source)
@@ -101,8 +92,6 @@ The developed nodes, the Gazebo and RViz environment are organized as shown in t
 
 <img src="./media/rosgraph_1.png" alt="rosgraph_1">
 
-The following sections decribes in more details each developed node.
-
 ### robot_logic.py ([source](./assignment_2/script/robot_logic.py))
 It interfaces with the `ROSPlan` framework to drive the rosbot to accomplish the task:
 
@@ -111,9 +100,7 @@ It interfaces with the `ROSPlan` framework to drive the rosbot to accomplish the
 - parse the plan to make it `ROS` compatible,
 - dispatches the actions to accomplish the task
 
-It implements a simple state machine to send the requests  to the `ROSPlan` services, as represented in the following state machine:
-<img src="./assets/robot_logic_stateMachine.png" alt="robot_logic.py state machine">  
-*`robot_logic.py` node state machine*
+It implements a state machine to send the requests  to the `ROSPlan` services.
 
 ### robot_vision.py ([source](./assignment_2/script/robot_vision.py))
 It subscribes to the following camera topics:
@@ -124,18 +111,6 @@ It subscribes to the following camera topics:
     to extract information about the marker in view  
 
 It publishes the topic `/info_vision`, which provides data about the current seen marker id and the four corners of the marker.
-
-```C++
-int32[] ids
-float32[] camera_center
-float32[] marker_center
-float32[] marker_top_right
-float32[] marker_top_left
-float32[] marker_bottom_left
-float32[] marker_bottom_right
-```
-
-*`/info_vision` topic*
 
 ### goto_interface.cpp ([source](./assignment_2/src/goto_interface.cpp))
 It implements the `goto` action defined in the `domain`([source](./assignment_2/pddl/domain.pddl)).  
@@ -154,11 +129,5 @@ it implements the `search` action defined in the `domain`([source](./assignment_
 
 ## Improvements
 
-The package can be improved considering the following points:
-
-- there is not any error handling,
-- the vision system handles only one marker per time. If more than a marker is in the camera view, only the first one in the list provided by the camera is considered,
-- if the camera does not find the searched marker id, the rosbot keeps on turning on itself looking for the marker id indefinitely. It could be implemented a timeout or any other exception handler,
-- once the rosbot reaches the target point, it takes time to get the notification from the `move_base` package that the service goal has been achieved. It could be possible to speed up the process introducing a check on the position of the robot and once reached the target position within a threshold, cancel the `move_base` service goal,
-- currently, the waypoint coordinates are hardcoded in `goto_interface.cpp` and `go-home_interface`. It would be more comfortable to be able to set the list of waypoint coordinates once and from launch file, avoiding the need to compile the code every time one or more coordinates are modified,
-- currently, once the rosbot comes back to the starting point, the `robot_logic.py` node terminates. Since the node is required, its termination triggers all other processes to terminate as well. A more graceful shut down procedure could be devised.
+- the vision system processes only one marker per time. If multiple markers appear in the camera's view, only the first one in the list given by the camera is taken into account;
+- If the camera does not detect the desired marker ID, the Rosbot continues to turn in place, searching for the marker ID indefinitely. Probably an exception handler could be implemented to address this.

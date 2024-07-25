@@ -85,8 +85,7 @@ The rosbot will drive toward the first marker position. Once reached, it will tu
 Once all markers have been found, the rosbot will drive toward the initial position, and once reached, the process terminates and closes all the started processes.  
 An example of simulation run is shown in the following video.
 
-
-
+https://github.com/user-attachments/assets/45b4d82f-aaea-4ca0-83bf-f28f5f1e6706
 
 ## Architecture
 

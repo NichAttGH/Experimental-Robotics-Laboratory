@@ -20,16 +20,7 @@ In this Assignment have been implemented:
 The robot is a [Husarion ROSbot 2R](https://husarion.com/#robots) and its model is provided by the package [rosbot_description](https://github.com/husarion/rosbot_ros/tree/noetic/src/rosbot_description).
 The `ROSPlan` framework and the packages `aruco` and `rosbot_description` are included in this repository for convenience.
 
-The requirements for the assignment are the following:
-
-- A mobile robot endowed with a camera must find all marker in a given environment and go back to the initial position.
-- The positions of the marker are the following:
-  - marker 11 is visible from the position x = 6.0, y = 2.0
-  - marker 12 is visible from the position x = 7.0, y = -5.0
-  - marker 13 is visible from the position x = -3.0, y = -8.0
-  - marker 15 is visible from the position x = -7.0, y =-1.5
-- The framework `ROSPlan` must be used to plan the actions of the robot
-- The assignment must be implemented both in simulation (the world file assignment2.world is given) and with the real robot.
+The requirements for the assignment are written here ([source](exprob_2023_assignment2.pdf)).
 
 In this branch we implement the code for the simulation of the real rosbot. The architecture is based on:
 - a node implementing the logic for generating the plan using the `ROSPlan` framework;

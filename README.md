@@ -85,7 +85,8 @@ The rosbot will drive toward the first marker position. Once reached, it will tu
 Once all markers have been found, the rosbot will drive toward the initial position, and once reached, the process terminates and closes all the started processes.  
 An example of simulation run is shown in the following video.
 
-https://github.com/NichAttGH/Experimental-Robotics-Laboratory/assets/media/rosbot-2024-07-25_16.48.46.mkv
+
+
 
 ## Architecture
 
@@ -99,7 +100,7 @@ The package is developed in five nodes:
 
 The developed nodes, the Gazebo and RViz environment are organized as shown in the following `rqt_graph`:
 
-<img src="./assets/rqt_graph_main.png" alt="rqt_graph main">
+<img src="./media/rosgraph_1.png" alt="rosgraph_1">
 
 The following sections decribes in more details each developed node.
 

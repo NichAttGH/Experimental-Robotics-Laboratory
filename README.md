@@ -45,7 +45,7 @@ For testing we used a machine with Linux Ubuntu 20.04 LTS.
 
 To use the packages in this repository, just clone the repository in your_catkin_workspace/src folder with this command:
 ```bash
-git clone --branch name_of_the_branch https://repository_url.git
+git clone --branch Assignment-2-sim https://github.com/NichAttGH/Experimental-Robotics-Laboratory.git
 ```
 
 Go back into the workspace folder and build the packages

@@ -1,5 +1,13 @@
 # Experimental Robotics Laboratory - Assignment 2
 
+### Collaborators
+
+| Name                  | ID       |
+| --------------------- |:--------:|
+| Nicholas Attolino     | S5656048 |
+| Teodoro Lima          | S5452613 |
+| Claudio Tomaiuolo     | S5630055 |
+
 ## Introduction
 
 In this Assignment have been implemented:

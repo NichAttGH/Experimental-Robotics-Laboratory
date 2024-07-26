@@ -32,7 +32,15 @@ In this branch we implement the code for the simulation of the real rosbot. The 
 Requirements:
 
 - ROS Noetic environment is already installed and working properly;
-- Packages [move_base](http://wiki.ros.org/move_base) and [gmapping](http://wiki.ros.org/gmapping) properly installed. These packages are used to drive the rosbot and to create the global and local map of the environment;
+- Install the *OpenSLAM GMapping* package. This can be done using the following command:
+```python
+sudo apt-get install ros-noetic-openslam-gmapping
+```
+- Install the *MoveBase* package. This can be done using the following command (for Ubuntu 20):
+```python
+sudo apt-get install ros-noetic-octomap-msgs ros-noetic-navigation ros-noetic-tf ros-noetic-move-base-msgs libsdl1.2-dev libsdl-image1.2-dev
+```
+These packages are used to drive the rosbot and to create the global and local map of the environment;
 - Git properly installed;
 - [Xterm](https://invisible-island.net/xterm/) to provide information via a separated console.
   To install it:
